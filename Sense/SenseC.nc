@@ -73,7 +73,8 @@ implementation
     node_ack = TRUE;
     node.time_period = 100;
     node.total_time = 0;
-    call Timer0.startPeriodic(node.time_period);
+    if (node.nodeid == NODE2)
+      call Timer0.startPeriodic(node.time_period);
 
     call RadioControl.start();
   }
@@ -104,28 +105,25 @@ implementation
       call RadioPacket.setPayloadLength(&node_msg, sizeof(RADIO_MSG));
       call RadioAMPacket.setType(&node_msg, AM_RADIO_MSG);
       call RadioAMPacket.setSource(&node_msg, node.nodeid);
-      if (node.nodeid == NODE1)
-        call RadioAMPacket.setDestination(&node_msg, NODE0);
-      else
-        call RadioAMPacket.setDestination(&node_msg, NODE1);
+      call RadioAMPacket.setDestination(&node_msg, NODE1);
       if (!radioFull)
-	{
-	  ret = radioQueue[radioIn];
-	  *radioQueue[radioIn] = node_msg;
+      {
+        ret = radioQueue[radioIn];
+        *radioQueue[radioIn] = node_msg;
 
-	  radioIn = (radioIn + 1) % RADIO_QUEUE_LEN;
-	
-	  if (radioIn == radioOut)
-	    radioFull = TRUE;
+        radioIn = (radioIn + 1) % RADIO_QUEUE_LEN;
 
-	  if (!radioBusy)
-	    {
-	      post radioSendTask();
-	      radioBusy = TRUE;
-	    }
-	}
+        if (radioIn == radioOut)
+          radioFull = TRUE;
+
+        if (!radioBusy)
+        {
+          post radioSendTask();
+          radioBusy = TRUE;
+        }
+      }
       else
-	dropBlink();
+        dropBlink();
     }
   }
 
@@ -212,8 +210,6 @@ implementation
       if (len == sizeof(TIME_MSG)) {
         TIME_MSG *btrpkt = (TIME_MSG *)payload;
         node.time_period = btrpkt->time_period;
-        call Timer0.stop();
-        call Timer0.startPeriodic(node.time_period);
         if (node.nodeid == NODE1)
           {
             call RadioPacket.setPayloadLength(msg, sizeof(TIME_MSG));
@@ -237,6 +233,11 @@ implementation
             else
 	      dropBlink();
           }
+        else
+        {
+          call Timer0.stop();
+          call Timer0.startPeriodic(node.time_period);
+        }
       }
     }
     

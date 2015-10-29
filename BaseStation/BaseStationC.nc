@@ -41,9 +41,9 @@ implementation
   bool       radioBusy, radioFull;
   uint8_t    radioError;
 
-  ACK_MSG    node1, node2;
-  bool       node1Lock, node2Lock;
-  message_t  node1_msg, node2_msg;
+  ACK_MSG    node2;
+  bool       node2Lock;
+  message_t  node2_msg;
 
   task void serialSendTask();
   task void radioSendTask();
@@ -85,9 +85,6 @@ implementation
     radioFull = TRUE;
     radioError = 0;
 
-    node1.nodeid = NODE1;
-    node1.counter = 0;
-    node1Lock = FALSE;
     node2.nodeid = NODE2;
     node2.counter = 0;
     node2Lock = FALSE;
@@ -138,7 +135,7 @@ implementation
     atomic {
       RADIO_MSG *btrpkt = (RADIO_MSG*)payload;
       ACK_MSG *ackpkt;
-      if (((btrpkt->nodeid == node1.nodeid) && (btrpkt->counter == node1.counter)) || ((btrpkt->nodeid == node2.nodeid) && (btrpkt->counter == node2.counter)))
+      if ((btrpkt->nodeid == node2.nodeid) && (btrpkt->counter == node2.counter))
       {
         call RadioPacket.setPayloadLength(msg, sizeof(RADIO_MSG));
         call RadioAMPacket.setSource(msg, NODE0);
@@ -158,10 +155,7 @@ implementation
             serialBusy = TRUE;
           }
 
-          if (btrpkt->nodeid == node1.nodeid)
-            node1.counter++;
-          else
-            node2.counter++;
+          node2.counter++;
         }
         else
         {
@@ -170,30 +164,17 @@ implementation
         }
       }
 
-      if (btrpkt->nodeid == node1.nodeid)
-      {
-        call SerialPacket.setPayloadLength(&node1_msg, sizeof(ACK_MSG));
-        call SerialAMPacket.setSource(&node1_msg, NODE0);
-        call SerialAMPacket.setDestination(&node1_msg, NODE1);
-        ackpkt = (ACK_MSG*)(call SerialPacket.getPayload(&node1_msg, sizeof(ACK_MSG)));
-      }
-      else
-      {
-        call SerialPacket.setPayloadLength(&node2_msg, sizeof(ACK_MSG));
-        call SerialAMPacket.setSource(&node2_msg, NODE0);
-        call SerialAMPacket.setDestination(&node2_msg, NODE1);
-        ackpkt = (ACK_MSG*)(call SerialPacket.getPayload(&node2_msg, sizeof(ACK_MSG)));
-      }
+      call SerialPacket.setPayloadLength(&node2_msg, sizeof(ACK_MSG));
+      call SerialAMPacket.setSource(&node2_msg, NODE0);
+      call SerialAMPacket.setDestination(&node2_msg, NODE1);
+      ackpkt = (ACK_MSG*)(call SerialPacket.getPayload(&node2_msg, sizeof(ACK_MSG)));
       ackpkt->nodeid = btrpkt->nodeid;
       ackpkt->counter = btrpkt->counter;
 
       if (!radioFull)
 	{
 	  ret = radioQueue[radioIn];
-          if (btrpkt->nodeid == node1.nodeid)
-	    *radioQueue[radioIn] = node1_msg;
-          else
-            *radioQueue[radioIn] = node2_msg;
+          *radioQueue[radioIn] = node2_msg;
 	  if (++radioIn >= RADIO_QUEUE_LEN)
 	    radioIn = 0;
 	  if (radioIn == radioOut)
