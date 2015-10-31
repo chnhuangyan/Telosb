@@ -39,34 +39,22 @@ implementation
   message_t  * ONE_NOK radioQueue[RADIO_QUEUE_LEN];
   uint8_t    radioIn, radioOut;
   bool       radioBusy, radioFull;
-  uint8_t    radioError;
 
   ACK_MSG    node2;
   bool       node2Lock;
   message_t  node2_msg;
 
+  uint16_t   node0_retrans;
+
   task void serialSendTask();
   task void radioSendTask();
 
-  void fixError() {
-    radioError++;
-    if (radioError == 10)
-    {
-      radioIn = radioOut = radioError = 0;
-      radioBusy = radioFull = FALSE;
-      serialIn = serialOut = 0;
-      serialBusy = serialFull = FALSE;
-    }
-  }
-
   void dropBlink() {
     call Leds.led2Toggle();
-    fixError();
   }
 
   void failBlink() {
     call Leds.led2Toggle();
-    fixError();
   }
 
   event void Boot.booted() {
@@ -83,11 +71,12 @@ implementation
     radioIn = radioOut = 0;
     radioBusy = FALSE;
     radioFull = TRUE;
-    radioError = 0;
 
     node2.nodeid = NODE2;
     node2.counter = 0;
     node2Lock = FALSE;
+
+    node0_retrans = 0;
 
     call RadioControl.start();
     call SerialControl.start();
@@ -135,34 +124,38 @@ implementation
     atomic {
       RADIO_MSG *btrpkt = (RADIO_MSG*)payload;
       ACK_MSG *ackpkt;
-      if ((btrpkt->nodeid == node2.nodeid) && (btrpkt->counter == node2.counter))
-      {
-        call RadioPacket.setPayloadLength(msg, sizeof(RADIO_MSG));
-        call RadioAMPacket.setSource(msg, NODE0);
-        call RadioAMPacket.setDestination(msg, AM_BROADCAST_ADDR);
-        if (!serialFull)
+      if (btrpkt->nodeid == node2.nodeid)
+        if (btrpkt->counter == node2.counter)
         {
-          ret = serialQueue[serialIn];
-          *serialQueue[serialIn] = *msg;
-          serialIn = (serialIn + 1) % SERIAL_QUEUE_LEN;
-
-          if (serialIn == serialOut)
-            serialFull = TRUE;
-
-          if (!serialBusy)
+          btrpkt->node0_retrans = node0_retrans;
+          call RadioPacket.setPayloadLength(msg, sizeof(RADIO_MSG));
+          call RadioAMPacket.setSource(msg, NODE0);
+          call RadioAMPacket.setDestination(msg, AM_BROADCAST_ADDR);
+          if (!serialFull)
           {
-            post serialSendTask();
-            serialBusy = TRUE;
-          }
+            ret = serialQueue[serialIn];
+            *serialQueue[serialIn] = *msg;
+            serialIn = (serialIn + 1) % SERIAL_QUEUE_LEN;
 
-          node2.counter++;
+            if (serialIn == serialOut)
+              serialFull = TRUE;
+
+            if (!serialBusy)
+            {
+              post serialSendTask();
+              serialBusy = TRUE;
+            }
+
+            node2.counter++;
+          }
+          else
+          {
+	    dropBlink();
+            return ret;
+          }
         }
         else
-        {
-	  dropBlink();
-          return ret;
-        }
-      }
+          node0_retrans++;
 
       call SerialPacket.setPayloadLength(&node2_msg, sizeof(ACK_MSG));
       call SerialAMPacket.setSource(&node2_msg, NODE0);
