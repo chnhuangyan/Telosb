@@ -188,6 +188,12 @@ class Graph extends JPanel
         	case Window.LIGHT:
         		gy = data.getPhysicalLight();
         		break;
+		case Window.LINKRETRANS:
+			gy = data.getRetransRateDueToLink();
+			break;
+		case Window.OVERFLOWRETRANS:
+			gy = data.getRetransRateDueToOverflow();
+			break;
         	}
     	}
     	

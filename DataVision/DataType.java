@@ -6,13 +6,21 @@ public class DataType {
 	public int light;
 	public long seqid;
 	public long time;
+	public long counter;
+	public int node2_retrans;
+        public int node1_overflow;
+        public int node0_retrans;
 
-	public DataType(int temp, int humid, int light, long seqid, long time) {
+	public DataType(int temp, int humid, int light, long seqid, long time, int node2_retrans, int node1_overflow, int node0_retrans) {
 		this.temp = temp;
 		this.humid = humid;
 		this.light = light;
 		this.seqid = seqid;
 		this.time = time;
+		this.node2_retrans = node2_retrans;
+		this.node1_overflow = node1_overflow;
+		this.node0_retrans = node0_retrans; 
+		this.counter = seqid;
 	}
 	
 	public double getPhysicalTemp() {
@@ -29,5 +37,15 @@ public class DataType {
 	
 	public double getPhysicalLight() {
 		return (0.085 * this.light);
+	}
+
+	public double getRetransRateDueToLink() {
+		//return double(this.node2_retrans - this.node1_overflow)/(this.counter + this.node2_retrans);
+		return this.node2_retrans;
+	} 
+
+	public double getRetransRateDueToOverflow(){
+		//return double(this.node1_overflow)/(this.counter + this.node2_retrans);
+		return this.node0_retrans;
 	}
 }
