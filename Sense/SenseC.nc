@@ -25,6 +25,7 @@ implementation
 {
   enum {
     RADIO_QUEUE_LEN = 128,
+    CONSECUTIVE_N_MAX = 10,
   };
 
   message_t  radioQueueBufs[RADIO_QUEUE_LEN];
@@ -35,8 +36,12 @@ implementation
   RADIO_MSG  node;
   message_t node_msg;
   bool node_ack;
-  uint16_t factor;
 
+  uint16_t lossCntLast;
+  uint16_t consN;
+  uint16_t consTotal[CONSECUTIVE_N_MAX * 2 + 1];
+  uint16_t consSucc[CONSECUTIVE_N_MAX * 2 + 1];
+  uint16_t revCounter;
   task void radioSendTask();
 
   void dropBlink() {
@@ -57,6 +62,13 @@ implementation
     radioIn = radioOut = 0;
     radioBusy = FALSE;
     radioFull = TRUE;
+    lossCntLast = 0;
+    consN = 0;
+    revCounter = 0;
+    for( i = 0; i <= CONSECUTIVE_N_MAX * 2; i++) {
+        consTotal[i] = 0;
+        consSucc[i] = 0;
+    }
 
     node.nodeid = TOS_NODE_ID;
     node.counter = -1;
@@ -65,8 +77,7 @@ implementation
     node.total_time = 0;
     node.node2_retrans = 0;
     node.node1_overflow = 0;
-    node.factor = 0;
-    factor = 0;
+    
     if (node.nodeid == NODE2)
       call Timer0.startPeriodic(node.time_period);
 
@@ -148,8 +159,49 @@ implementation
     return receive(msg, payload, len);
   }
 
-  uint16_t count(uint16_t node2_sum, uint16_t node1_sum) {
-    return 1;
+  void calTempVar(uint16_t sendCnt, uint16_t revCnt) {
+
+    uint8_t i = 0;
+
+    uint16_t del = sendCnt - revCnt - lossCntLast;
+    if(del == 0) {
+        consN ++;
+        if(consN > 10 + CONSECUTIVE_N_MAX) consN = CONSECUTIVE_N_MAX;
+        consTotal[consN]++;
+	consSucc[consN]++;
+    } 
+    else {
+        if(del > CONSECUTIVE_N_MAX) del = CONSECUTIVE_N_MAX;
+        for(i = 0; i <= del; i++) {
+            consN = i;
+            consTotal[CONSECUTIVE_N_MAX - consN] ++;
+        }
+        consSucc[CONSECUTIVE_N_MAX - del] ++;
+        consN = CONSECUTIVE_N_MAX; 
+    }
+    
+    lossCntLast = sendCnt - revCnt;
+		
+    return ;
+  }
+
+  uint16_t calBetaFactor(uint16_t sendCnt, uint16_t revCnt) {
+    uint8_t i;
+    uint16_t esum = 0;
+    uint16_t bsum = 0; 
+    uint16_t beta = 0;
+
+    for(i = 0; i < CONSECUTIVE_N_MAX; i++) {
+        esum = esum + consSucc[i] / consTotal[i];
+        bsum = bsum + revCnt / sendCnt;
+    }
+    for(i = CONSECUTIVE_N_MAX; i <= CONSECUTIVE_N_MAX * 2; i++) {
+        esum = esum + 1 - consSucc[i] / consTotal[i] ;
+        bsum = bsum + 1 - revCnt / sendCnt;
+    }
+    
+    beta = (esum - bsum) / esum;
+    return beta;
   }
 
   message_t* receive(message_t *msg, void *payload, uint8_t len) {
@@ -191,8 +243,9 @@ implementation
       if ((len == sizeof(RADIO_MSG)) && ((call RadioAMPacket.source(msg)) == NODE2)){
         RADIO_MSG *btrpkt = (RADIO_MSG*)payload;
         btrpkt->node1_overflow = node.node1_overflow;
-        factor++;
-        btrpkt->factor = count(btrpkt->factor, factor);
+        revCounter++;
+	calTempVar(btrpkt->counter + btrpkt->node2_retrans, revCounter); 
+        btrpkt->factor = calBetaFactor(btrpkt->counter + btrpkt->node2_retrans, revCounter);
         call RadioPacket.setPayloadLength(msg, sizeof(RADIO_MSG));
         call RadioAMPacket.setType(msg, AM_RADIO_MSG);
         call RadioAMPacket.setSource(msg, node.nodeid);
