@@ -16,6 +16,9 @@ typedef nx_struct RADIO_MSG {
   nx_uint16_t humidity;
   nx_uint16_t light;
   nx_uint32_t total_time;
+  nx_uint16_t node2_retrans;
+  nx_uint16_t node1_overflow;
+  nx_uint16_t node0_retrans;
 } RADIO_MSG;
 
 typedef nx_struct ACK_MSG {

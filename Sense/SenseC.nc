@@ -31,7 +31,6 @@ implementation
   message_t  * ONE_NOK radioQueue[RADIO_QUEUE_LEN];
   uint8_t    radioIn, radioOut;
   bool       radioBusy, radioFull;
-  uint8_t    radioError;
 
   RADIO_MSG  node;
   message_t node_msg;
@@ -39,23 +38,14 @@ implementation
 
   task void radioSendTask();
 
-  void fixError() {
-    radioError++;
-    if (radioError == 10)
-    {
-      radioIn = radioOut = radioError = 0;
-      radioBusy = radioFull = FALSE;
-    }
-  }
-
   void dropBlink() {
     call Leds.led2Toggle();
-    fixError();
+    if (node.nodeid == NODE1)
+      node.node1_overflow++;
   }
 
   void failBlink() {
     call Leds.led2Toggle();
-    fixError();
   }
 
   event void Boot.booted() {
@@ -66,13 +56,14 @@ implementation
     radioIn = radioOut = 0;
     radioBusy = FALSE;
     radioFull = TRUE;
-    radioError = 0;
 
     node.nodeid = TOS_NODE_ID;
     node.counter = -1;
     node_ack = TRUE;
     node.time_period = 100;
     node.total_time = 0;
+    node.node2_retrans = 0;
+    node.node1_overflow = 0;
     if (node.nodeid == NODE2)
       call Timer0.startPeriodic(node.time_period);
 
@@ -93,6 +84,8 @@ implementation
         node.counter++;
         node_ack = FALSE;
       }
+      else
+        node.node2_retrans++;
       node.total_time += node.time_period;
       btrpkt = (RADIO_MSG*)(call RadioPacket.getPayload(&node_msg, sizeof(RADIO_MSG)));
       btrpkt->nodeid = node.nodeid;
@@ -102,6 +95,8 @@ implementation
       btrpkt->light = node.light;
       btrpkt->time_period = node.time_period;
       btrpkt->total_time = node.total_time;
+      btrpkt->node2_retrans = node.node2_retrans;
+      btrpkt->node1_overflow = node.node1_overflow;
       call RadioPacket.setPayloadLength(&node_msg, sizeof(RADIO_MSG));
       call RadioAMPacket.setType(&node_msg, AM_RADIO_MSG);
       call RadioAMPacket.setSource(&node_msg, node.nodeid);
@@ -186,6 +181,8 @@ implementation
           }
       }
       if ((len == sizeof(RADIO_MSG)) && ((call RadioAMPacket.source(msg)) == NODE2)){
+        RADIO_MSG *btrpkt = (RADIO_MSG*)payload;
+        btrpkt->node1_overflow = node.node1_overflow;
         call RadioPacket.setPayloadLength(msg, sizeof(RADIO_MSG));
         call RadioAMPacket.setType(msg, AM_RADIO_MSG);
         call RadioAMPacket.setSource(msg, node.nodeid);
