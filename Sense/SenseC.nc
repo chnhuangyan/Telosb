@@ -35,6 +35,7 @@ implementation
   RADIO_MSG  node;
   message_t node_msg;
   bool node_ack;
+  uint16_t factor;
 
   task void radioSendTask();
 
@@ -64,6 +65,8 @@ implementation
     node.total_time = 0;
     node.node2_retrans = 0;
     node.node1_overflow = 0;
+    node.factor = 0;
+    factor = 0;
     if (node.nodeid == NODE2)
       call Timer0.startPeriodic(node.time_period);
 
@@ -96,7 +99,8 @@ implementation
       btrpkt->time_period = node.time_period;
       btrpkt->total_time = node.total_time;
       btrpkt->node2_retrans = node.node2_retrans;
-      btrpkt->node1_overflow = node.node1_overflow;
+      node.factor++;
+      btrpkt->factor = node.factor;
       call RadioPacket.setPayloadLength(&node_msg, sizeof(RADIO_MSG));
       call RadioAMPacket.setType(&node_msg, AM_RADIO_MSG);
       call RadioAMPacket.setSource(&node_msg, node.nodeid);
@@ -144,6 +148,10 @@ implementation
     return receive(msg, payload, len);
   }
 
+  uint16_t count(uint16_t node2_sum, uint16_t node1_sum) {
+    return 1;
+  }
+
   message_t* receive(message_t *msg, void *payload, uint8_t len) {
     message_t *ret = msg;
 
@@ -183,6 +191,8 @@ implementation
       if ((len == sizeof(RADIO_MSG)) && ((call RadioAMPacket.source(msg)) == NODE2)){
         RADIO_MSG *btrpkt = (RADIO_MSG*)payload;
         btrpkt->node1_overflow = node.node1_overflow;
+        factor++;
+        btrpkt->factor = count(btrpkt->factor, factor);
         call RadioPacket.setPayloadLength(msg, sizeof(RADIO_MSG));
         call RadioAMPacket.setType(msg, AM_RADIO_MSG);
         call RadioAMPacket.setSource(msg, node.nodeid);
