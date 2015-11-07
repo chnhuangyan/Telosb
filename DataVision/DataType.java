@@ -48,7 +48,7 @@ public class DataType {
 
 	public double getRetransRateDueToOverflow(){
 		//return double(this.node1_overflow)/(this.counter + this.node2_retrans);
-		return this.node0_retrans;
+		return this.node1_overflow;
 	}
 
         public double getBetaFactor(){
