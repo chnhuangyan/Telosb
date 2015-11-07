@@ -10,8 +10,9 @@ public class DataType {
 	public int node2_retrans;
         public int node1_overflow;
         public int node0_retrans;
+        public int factor;
 
-	public DataType(int temp, int humid, int light, long seqid, long time, int node2_retrans, int node1_overflow, int node0_retrans) {
+	public DataType(int temp, int humid, int light, long seqid, long time, int node2_retrans, int node1_overflow, int node0_retrans, int factor) {
 		this.temp = temp;
 		this.humid = humid;
 		this.light = light;
@@ -21,6 +22,7 @@ public class DataType {
 		this.node1_overflow = node1_overflow;
 		this.node0_retrans = node0_retrans; 
 		this.counter = seqid;
+                this.factor = factor;
 	}
 	
 	public double getPhysicalTemp() {
@@ -48,4 +50,9 @@ public class DataType {
 		//return double(this.node1_overflow)/(this.counter + this.node2_retrans);
 		return this.node0_retrans;
 	}
+
+        public double getBetaFactor(){
+                return (double)this.factor/100;
+        }
+
 }

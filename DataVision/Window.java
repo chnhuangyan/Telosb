@@ -38,6 +38,7 @@ class Window {
     public static final int LIGHT = 2;
     public static final int LINKRETRANS = 3;
     public static final int OVERFLOWRETRANS = 4;
+    public static final int BETAFACTOR = 5;
 
     Window(Oscilloscope parent) {
 	this.parent = parent;
@@ -205,7 +206,7 @@ class Window {
 	    } );
 	updateSamplePeriod();
 	
-	String[] listStrings = {"Temp", "Humid", "Light", "LINKRETRANS", "OVERFLOWRETRANS"};
+	String[] listStrings = {"Temp", "Humid", "Light", "LINKRETRANS", "OVERFLOWRETRANS","BETAFACTOR"};
 	JComboBox comboBox = makeComboBox(listStrings, new ActionListener() {
 		public void actionPerformed(ActionEvent e) {
 			JComboBox cb = (JComboBox) e.getSource();

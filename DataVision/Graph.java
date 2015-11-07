@@ -193,8 +193,11 @@ class Graph extends JPanel
 			break;
 		case Window.OVERFLOWRETRANS:
 			gy = data.getRetransRateDueToOverflow();
+			break; 
+		case Window.BETAFACTOR:
+			gy = data.getBetaFactor();
 			break;
-        	}
+                }        
     	}
     	
         int sy = -275;
