@@ -6,7 +6,8 @@
 
 enum {
   AM_RADIO_MSG = 6,
-  AM_TIME_MSG = 6
+  AM_TIME_MSG = 6,
+  AM_ACK_MSG = 6
 };
 
 typedef nx_struct RADIO_MSG {
