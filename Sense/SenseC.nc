@@ -185,12 +185,12 @@ implementation
     return ;
   }
 
-  uint16_t calBetaFactor(uint16_t sendCnt, uint16_t revCnt) {
+  int16_t calBetaFactor(uint16_t sendCnt, uint16_t revCnt) {
     uint8_t i;
-    uint16_t esum = 0;
-    uint16_t bsum = 0; 
-    uint16_t beta = 0;
-    uint16_t rate = 0;
+    int16_t esum = 0;
+    int16_t bsum = 0; 
+    int16_t beta = 0;
+    int16_t rate = 0;
     if(sendCnt == 0) return 0;
     rate = revCnt * 100 / sendCnt;
     if(rate == 100) return 100;

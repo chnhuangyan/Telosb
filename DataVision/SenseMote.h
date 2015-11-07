@@ -21,7 +21,7 @@ typedef nx_struct RADIO_MSG {
   nx_uint16_t node2_retrans;
   nx_uint16_t node1_overflow;
   nx_uint16_t node0_retrans;
-  nx_uint16_t factor;
+  nx_int16_t factor;
 } RADIO_MSG;
 
 typedef nx_struct ACK_MSG {
