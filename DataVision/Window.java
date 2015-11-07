@@ -206,7 +206,7 @@ class Window {
 	    } );
 	updateSamplePeriod();
 	
-	String[] listStrings = {"Temp", "Humid", "Light", "LINKRETRANS", "OVERFLOWRETRANS","BETAFACTOR"};
+	String[] listStrings = {"Temp", "Humid", "Light", "Link Retrans Rate", "Overflow Retrans Rate","Beta- factor"};
 	JComboBox comboBox = makeComboBox(listStrings, new ActionListener() {
 		public void actionPerformed(ActionEvent e) {
 			JComboBox cb = (JComboBox) e.getSource();
@@ -376,6 +376,9 @@ class Window {
     	if (mode == Window.LIGHT) {
     		return -20;
     	}
+	if (mode == Window.BETAFACTOR) {
+                return 0;
+        }
     	return -45;
     }
     
@@ -389,6 +392,9 @@ class Window {
     	if (mode == Window.LIGHT) {
     		return 200;
     	}
+        if (mode == Window.BETAFACTOR) {
+                return 1;
+        }
     	return 500;
     }
     
@@ -405,7 +411,7 @@ class Window {
             		for (int j = node.dataStart; j < node.dataEnd; j++) {
             			DataType data = node.getData(j);
             			if (data != null) {
-            				writer.write(nodeid + " " + Long.toString(data.seqid) + " " + Double.toString(data.getPhysicalTemp()) + " " + Double.toString(data.getPhysicalHumid()) + " " + Double.toString(data.getPhysicalLight()) + " " + Long.toString(data.time) + "\n");
+            				writer.write(nodeid + " " + Long.toString(data.seqid) + " " + Double.toString(data.getPhysicalTemp()) + " " + Long.toString(data.time) + " " + Double.toString(data.getBetaFactor())+ "\n");
                 			writer.flush();
             			}
             		}
