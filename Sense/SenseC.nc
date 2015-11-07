@@ -165,10 +165,10 @@ implementation
 
     uint16_t del = sendCnt - revCnt - lossCntLast;
     if(del == 0) {
+        if(consN > CONSECUTIVE_N_MAX) return ;
+        consTotal[consN + CONSECUTIVE_N_MAX]++;
+	consSucc[consN + CONSECUTIVE_N_MAX]++;
         consN ++;
-        if(consN > 10 + CONSECUTIVE_N_MAX) consN = CONSECUTIVE_N_MAX;
-        consTotal[consN]++;
-	consSucc[consN]++;
     } 
     else {
         if(del > CONSECUTIVE_N_MAX) del = CONSECUTIVE_N_MAX;
@@ -177,7 +177,7 @@ implementation
             consTotal[CONSECUTIVE_N_MAX - consN] ++;
         }
         consSucc[CONSECUTIVE_N_MAX - del] ++;
-        consN = CONSECUTIVE_N_MAX; 
+        consN = 0; 
     }
     
     lossCntLast = sendCnt - revCnt;
@@ -190,17 +190,23 @@ implementation
     uint16_t esum = 0;
     uint16_t bsum = 0; 
     uint16_t beta = 0;
-
+    uint16_t rate = 0;
+    if(sendCnt == 0) return 0;
+    rate = revCnt * 100 / sendCnt;
+    if(rate == 100) return 100;
     for(i = 0; i < CONSECUTIVE_N_MAX; i++) {
-        esum = esum + consSucc[i] / consTotal[i];
-        bsum = bsum + revCnt / sendCnt;
+        if(consTotal[i] != 0) {
+            esum = esum + consSucc[i] * 100 / consTotal[i];
+            bsum = bsum + rate;
+        }
     }
     for(i = CONSECUTIVE_N_MAX; i <= CONSECUTIVE_N_MAX * 2; i++) {
-        esum = esum + 1 - consSucc[i] / consTotal[i] ;
-        bsum = bsum + 1 - revCnt / sendCnt;
+        if(consTotal[i] != 0) {
+            esum = esum + 100 - 100 * consSucc[i] / consTotal[i] ;
+            bsum = bsum + 100 - rate;
+        }
     }
-    
-    beta = (esum - bsum) / esum;
+    beta = (bsum - esum) * 100/ bsum;
     return beta;
   }
 
