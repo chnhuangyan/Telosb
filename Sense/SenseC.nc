@@ -195,9 +195,8 @@ implementation
     int16_t bsum = 0; 
     int16_t beta = 0;
     int16_t rate = 0;
-    if(sendCnt == 0) return 0;
-    rate = revCnt * 100 / sendCnt;
-    if(rate == 100) return 100;
+    if(sendCnt == 0 || revCnt == sendCnt) return 0;
+    rate = revCnt * 100 / sendCnt; 
     for(i = 0; i < CONSECUTIVE_N_MAX; i++) {
         if(consTotal[i] != 0) {
             esum = esum + consSucc[i] * 100 / consTotal[i];
@@ -255,6 +254,8 @@ implementation
         btrpkt->node1_overflow = node.node1_overflow;
         revCounter++;
 	calTempVar(btrpkt->counter + btrpkt->node2_retrans, revCounter); 
+        //if (btrpkt->node2_retrans == 0) btrpkt->factor = 0;
+        //else 
         btrpkt->factor = calBetaFactor(btrpkt->counter + btrpkt->node2_retrans, revCounter);
         call RadioPacket.setPayloadLength(msg, sizeof(RADIO_MSG));
         call RadioAMPacket.setType(msg, AM_RADIO_MSG);
