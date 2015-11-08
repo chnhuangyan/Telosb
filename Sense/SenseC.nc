@@ -168,7 +168,7 @@ implementation
 
     uint16_t del = sendCnt - revCnt - lossCntLast;
     if(del == 0) {
-        if(consN > CONSECUTIVE_N_MAX && consN != 0) {
+        if(consN <= CONSECUTIVE_N_MAX && consN != 0) {
             consTotal[consN + CONSECUTIVE_N_MAX]++;
 	    consSucc[consN + CONSECUTIVE_N_MAX]++;
         }
