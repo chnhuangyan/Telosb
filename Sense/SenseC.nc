@@ -165,19 +165,20 @@ implementation
 
     uint16_t del = sendCnt - revCnt - lossCntLast;
     if(del == 0) {
-        if(consN > CONSECUTIVE_N_MAX) return ;
+        if(consN > CONSECUTIVE_N_MAX && consN != 0) return ;
         consTotal[consN + CONSECUTIVE_N_MAX]++;
 	consSucc[consN + CONSECUTIVE_N_MAX]++;
-        consN ++;
+        consN ++;  
     } 
     else {
+        if(consN <= CONSECUTIVE_N_MAX && consN != 0) consTotal[consN + CONSECUTIVE_N_MAX] ++;
         if(del > CONSECUTIVE_N_MAX) del = CONSECUTIVE_N_MAX;
-        for(i = 0; i <= del; i++) {
+	else  consSucc[CONSECUTIVE_N_MAX - del] ++;
+        for(i = 1; i <= del; i++) {
             consN = i;
             consTotal[CONSECUTIVE_N_MAX - consN] ++;
         }
-        consSucc[CONSECUTIVE_N_MAX - del] ++;
-        consN = 0; 
+        consN = 1; 
     }
     
     lossCntLast = sendCnt - revCnt;
@@ -200,7 +201,7 @@ implementation
             bsum = bsum + rate;
         }
     }
-    for(i = CONSECUTIVE_N_MAX; i <= CONSECUTIVE_N_MAX * 2; i++) {
+    for(i = CONSECUTIVE_N_MAX + 1; i <= CONSECUTIVE_N_MAX * 2; i++) {
         if(consTotal[i] != 0) {
             esum = esum + 100 - 100 * consSucc[i] / consTotal[i] ;
             bsum = bsum + 100 - rate;

@@ -376,7 +376,7 @@ class Window {
     	if (mode == Window.LIGHT) {
     		return -20;
     	}
-	if (mode == Window.BETAFACTOR) {
+	if (mode == Window.BETAFACTOR || mode == OVERFLOWRETRANS || mode == LINKRETRANS) {
                 return 0;
         }
     	return -45;
@@ -392,7 +392,7 @@ class Window {
     	if (mode == Window.LIGHT) {
     		return 200;
     	}
-        if (mode == Window.BETAFACTOR) {
+        if (mode == Window.BETAFACTOR || mode == OVERFLOWRETRANS || mode == LINKRETRANS) {
                 return 1;
         }
     	return 500;
@@ -411,7 +411,7 @@ class Window {
             		for (int j = node.dataStart; j < node.dataEnd; j++) {
             			DataType data = node.getData(j);
             			if (data != null) {
-            				writer.write(nodeid + " " + Long.toString(data.seqid) + " " + Double.toString(data.getPhysicalTemp()) + " " + Long.toString(data.time) + " " + Double.toString(data.getBetaFactor())+ "\n");
+            				writer.write("nodeid : " + nodeid + " seqID: " + Long.toString(data.seqid) + " Temperature: " + Double.toString(data.getPhysicalTemp()) + " LRR: " + Double.toString(data.getRetransRateDueToLink()) + " ORR: " + Double.toString(data.getRetransRateDueToOverflow()) + " beta: "+ Double.toString(data.getBetaFactor())+ "\n");
                 			writer.flush();
             			}
             		}
