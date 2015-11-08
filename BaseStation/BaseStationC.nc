@@ -180,7 +180,10 @@ implementation
 	    }
 	}
       else
-	dropBlink();     
+      {
+        node0_retrans--;
+	dropBlink();
+      }
     }
     
     return ret;

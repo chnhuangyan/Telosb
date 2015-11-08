@@ -133,7 +133,10 @@ implementation
         }
       }
       else
+      {
+        node.node2_retrans--;
         dropBlink();
+      }
     }
   }
 
