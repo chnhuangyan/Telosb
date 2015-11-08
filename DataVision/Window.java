@@ -206,7 +206,7 @@ class Window {
 	    } );
 	updateSamplePeriod();
 	
-	String[] listStrings = {"Temp", "Humid", "Light", "Link Retrans Rate", "Overflow Retrans Rate","Beta- factor"};
+	String[] listStrings = {"Temp", "Humid", "Light", "Link Retrans Num", "Overflow Retrans Num","Beta- factor"};
 	JComboBox comboBox = makeComboBox(listStrings, new ActionListener() {
 		public void actionPerformed(ActionEvent e) {
 			JComboBox cb = (JComboBox) e.getSource();
@@ -376,7 +376,7 @@ class Window {
     	if (mode == Window.LIGHT) {
     		return -20;
     	}
-	if (mode == Window.BETAFACTOR || mode == OVERFLOWRETRANS || mode == LINKRETRANS) {
+	if (mode == Window.BETAFACTOR) { // || mode == OVERFLOWRETRANS || mode == LINKRETRANS) {
                 return 0;
         }
     	return -45;
@@ -392,7 +392,7 @@ class Window {
     	if (mode == Window.LIGHT) {
     		return 200;
     	}
-        if (mode == Window.BETAFACTOR || mode == OVERFLOWRETRANS || mode == LINKRETRANS) {
+        if (mode == Window.BETAFACTOR) { // || mode == OVERFLOWRETRANS || mode == LINKRETRANS) {
                 return 1;
         }
     	return 500;
