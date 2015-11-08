@@ -168,9 +168,10 @@ implementation
 
     uint16_t del = sendCnt - revCnt - lossCntLast;
     if(del == 0) {
-        if(consN > CONSECUTIVE_N_MAX && consN != 0) return ;
-        consTotal[consN + CONSECUTIVE_N_MAX]++;
-	consSucc[consN + CONSECUTIVE_N_MAX]++;
+        if(consN > CONSECUTIVE_N_MAX && consN != 0) {
+            consTotal[consN + CONSECUTIVE_N_MAX]++;
+	    consSucc[consN + CONSECUTIVE_N_MAX]++;
+        }
         consN ++;  
     } 
     else {
@@ -253,10 +254,10 @@ implementation
         RADIO_MSG *btrpkt = (RADIO_MSG*)payload;
         btrpkt->node1_overflow = node.node1_overflow;
         revCounter++;
-	calTempVar(btrpkt->counter + btrpkt->node2_retrans, revCounter); 
+	calTempVar(btrpkt->counter + btrpkt->node2_retrans + 1, revCounter); 
         //if (btrpkt->node2_retrans == 0) btrpkt->factor = 0;
         //else 
-        btrpkt->factor = calBetaFactor(btrpkt->counter + btrpkt->node2_retrans, revCounter);
+        btrpkt->factor = calBetaFactor(btrpkt->counter + btrpkt->node2_retrans + 1, revCounter);
         call RadioPacket.setPayloadLength(msg, sizeof(RADIO_MSG));
         call RadioAMPacket.setType(msg, AM_RADIO_MSG);
         call RadioAMPacket.setSource(msg, node.nodeid);

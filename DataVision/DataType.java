@@ -21,7 +21,7 @@ public class DataType {
 		this.node2_retrans = node2_retrans;
 		this.node1_overflow = node1_overflow;
 		this.node0_retrans = node0_retrans; 
-		this.counter = seqid;
+		this.counter = seqid + 1;
                 this.factor = factor;
 	}
 	
