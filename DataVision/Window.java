@@ -377,7 +377,7 @@ class Window {
     		return -20;
     	}
 	if (mode == Window.BETAFACTOR) { // || mode == OVERFLOWRETRANS || mode == LINKRETRANS) {
-                return 0;
+                return -1;
         }
     	return -45;
     }
